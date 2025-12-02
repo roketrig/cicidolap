@@ -1,0 +1,42 @@
+/* src/app/app.scss */
+:host {
+  display: block;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hidden {
+    display: none !important;
+  }
+  
+  .container {
+    padding: 0 0.5rem;
+  }
+}
+
+/* Custom styles */
+.text-color {
+  color: var(--text-color);
+}
+
+.hover\:text-primary:hover {
+  color: var(--primary-color) !important;
+}
+
+.no-underline {
+  text-decoration: none;
+}
+
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
+.mt-auto {
+  margin-top: auto;
+}
