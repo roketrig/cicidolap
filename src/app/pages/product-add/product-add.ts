@@ -3,8 +3,8 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { ProductService } from '../../services/product';
-import { ProductFormData, ProductCategory, ProductCondition, AgeGroup } from '../../models/product';
+import { ProductService } from '../../services/product'; // .service EKLE
+import { ProductFormData, ProductCategory, ProductCondition, AgeGroup } from '../../models/product'; // .model EKLE
 
 interface ImageFile {
   file: File;
@@ -15,10 +15,10 @@ interface ImageFile {
   selector: 'app-product-add',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './product-add.html',
-  styleUrls: ['./product-add.scss']
+  templateUrl: './product-add.html', // .component.html
+  styleUrls: ['./product-add.scss'] // .component.scss
 })
-export class ProductAdd {
+export class ProductAdd { // ProductAddComponent olarak değiştir
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   productData: ProductFormData = {

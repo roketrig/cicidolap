@@ -1,1 +1,289 @@
-<p>dashboard works!</p>
+<!-- src/app/pages/dashboard/dashboard.component.html -->
+<div class="dashboard-page">
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="container">
+      <div class="header-content">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="subtitle">Bağışlarınızı ve taleplerinizi takip edin</p>
+        </div>
+        <div class="user-info">
+          <div class="avatar">👤</div>
+          <div class="user-details">
+            <div class="user-name">Ahmet Yılmaz</div>
+            <div class="user-role">Bağışçı</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-content">
+            <div class="stat-value">{{userStats.totalDonations}}</div>
+            <div class="stat-label">Toplam Bağış</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🚚</div>
+          <div class="stat-content">
+            <div class="stat-value">{{userStats.deliveredDonations}}</div>
+            <div class="stat-label">Teslim Edilen</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-content">
+            <div class="stat-value">{{userStats.pendingDonations}}</div>
+            <div class="stat-label">Onay Bekleyen</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">❤️</div>
+          <div class="stat-content">
+            <div class="stat-value">{{userStats.receivedProducts}}</div>
+            <div class="stat-label">Aldığınız Ürünler</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="dashboard-content">
+      <!-- Left Column -->
+      <div class="dashboard-column">
+        <!-- My Donations -->
+        <div class="dashboard-section">
+          <div class="section-header">
+            <h2>Bağışlarım</h2>
+            <a routerLink="/add-product" class="btn btn-sm btn-primary">
+              + Yeni Bağış
+            </a>
+          </div>
+          
+          <div class="section-content">
+            <div *ngIf="userProducts.length === 0" class="empty-state">
+              <div class="empty-icon">📦</div>
+              <h3>Henüz bağışınız yok</h3>
+              <p>İlk bağışınızı yaparak başlayın</p>
+              <a routerLink="/add-product" class="btn btn-primary">
+                İlk Bağışı Yap
+              </a>
+            </div>
+            
+            <div *ngFor="let product of userProducts" class="donation-card">
+              <div class="donation-status" [class]="getStatusClass(product.status)">
+                {{getStatusText(product.status)}}
+              </div>
+              
+              <div class="donation-content">
+                <div class="donation-image">
+                  <img [src]="product.images[0] || 'assets/images/default-product.jpg'" [alt]="product.name">
+                </div>
+                
+                <div class="donation-details">
+                  <h3 class="donation-title">{{product.name}}</h3>
+                  <div class="donation-meta">
+                    <span class="meta-item">
+                      <span class="meta-icon">📅</span>
+                      {{formatDate(product.createdAt)}}
+                    </span>
+                    <span class="meta-item">
+                      <span class="meta-icon">🏷️</span>
+                      {{product.category}}
+                    </span>
+                  </div>
+                  
+                  <p class="donation-description">{{truncateText(product.description, 60)}}</p>
+                  
+                  <div class="donation-actions">
+                    <button class="btn btn-sm btn-outline" (click)="viewProduct(product.id)">
+                      Detay
+                    </button>
+                    <button 
+                      class="btn btn-sm btn-outline" 
+                      (click)="editProduct(product)"
+                      [disabled]="product.status !== productStatusEnum.PENDING">
+                      Düzenle
+                    </button>
+                    <button 
+                      class="btn btn-sm btn-danger" 
+                      (click)="deleteProduct(product)"
+                      [disabled]="product.status !== productStatusEnum.PENDING">
+                      Sil
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Recipient Info (if reserved or shipped) -->
+              <div *ngIf="product.status === productStatusEnum.RESERVED || product.status === productStatusEnum.SHIPPED" 
+                   class="recipient-info">
+                <div class="info-header">
+                  <span class="info-icon">👤</span>
+                  <strong>Alıcı Bilgileri:</strong>
+                </div>
+                <div class="info-content">
+                  <span>Mehmet Kaya • İstanbul</span>
+                  <span class="contact-badge" (click)="contactRecipient(product)">
+                    İletişime Geç
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Tracking Info (if shipped) -->
+              <div *ngIf="product.status === productStatusEnum.SHIPPED" class="tracking-info">
+                <div class="tracking-header">
+                  <span class="tracking-icon">🚚</span>
+                  <strong>Kargo Takip:</strong>
+                </div>
+                <div class="tracking-content">
+                  <span>Kargo No: {{product.trackingNumber || 'TRK123456789'}}</span>
+                  <a href="#" class="tracking-link" target="_blank">
+                    Kargoyu Takip Et →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard-section">
+          <h2>Hızlı İşlemler</h2>
+          <div class="quick-actions">
+            <a routerLink="/add-product" class="quick-action">
+              <div class="action-icon">➕</div>
+              <div class="action-content">
+                <h4>Yeni Ürün Bağışla</h4>
+                <p>Kullanmadığınız ürünleri bağışlayın</p>
+              </div>
+            </a>
+            
+            <a routerLink="/products" class="quick-action">
+              <div class="action-icon">🔍</div>
+              <div class="action-content">
+                <h4>Ürün Ara</h4>
+                <p>İhtiyacınız olan ürünleri bulun</p>
+              </div>
+            </a>
+            
+            <div class="quick-action" (click)="printShippingLabel()">
+              <div class="action-icon">🏷️</div>
+              <div class="action-content">
+                <h4>Kargo Etiketi Yazdır</h4>
+                <p>Bağışlarınız için kargo etiketi</p>
+              </div>
+            </div>
+            
+            <a routerLink="/profile" class="quick-action">
+              <div class="action-icon">👤</div>
+              <div class="action-content">
+                <h4>Profilimi Düzenle</h4>
+                <p>Kişisel bilgilerinizi güncelleyin</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="dashboard-column">
+        <!-- My Requests -->
+        <div class="dashboard-section">
+          <div class="section-header">
+            <h2>Ürün Taleplerim</h2>
+            <span class="badge">{{requestedProducts.length}} talep</span>
+          </div>
+          
+          <div class="section-content">
+            <div *ngIf="requestedProducts.length === 0" class="empty-state">
+              <div class="empty-icon">🛒</div>
+              <h3>Henüz talep ettiğiniz ürün yok</h3>
+              <p>Ürünleri keşfedip talep edebilirsiniz</p>
+              <a routerLink="/products" class="btn btn-primary">
+                Ürünleri Keşfet
+              </a>
+            </div>
+            
+            <div *ngFor="let product of requestedProducts" class="request-card">
+              <div class="request-status" [class]="getStatusClass(product.status)">
+                {{getStatusText(product.status)}}
+              </div>
+              
+              <div class="request-content">
+                <div class="request-image">
+                  <img [src]="product.images[0] || 'assets/images/default-product.jpg'" [alt]="product.name">
+                </div>
+                
+                <div class="request-details">
+                  <h3 class="request-title">{{product.name}}</h3>
+                  <div class="request-meta">
+                    <span class="meta-item">
+                      <span class="meta-icon">👤</span>
+                      {{product.donorName}}
+                    </span>
+                    <span class="meta-item">
+                      <span class="meta-icon">📍</span>
+                      {{product.donorCity}}
+                    </span>
+                  </div>
+                  
+                  <div class="request-actions">
+                    <button class="btn btn-sm btn-outline" (click)="viewProduct(product.id)">
+                      Detay
+                    </button>
+                    <button 
+                      class="btn btn-sm btn-danger"
+                      (click)="cancelRequest(product)"
+                      [disabled]="product.status !== productStatusEnum.RESERVED">
+                      Talebi İptal Et
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="dashboard-section">
+          <h2>Son Aktivite</h2>
+          <div class="activity-list">
+            <div *ngFor="let activity of recentActivities" class="activity-item">
+              <div class="activity-icon" [innerHTML]="activity.icon"></div>
+              <div class="activity-content">
+                <p class="activity-text">{{activity.text}}</p>
+                <span class="activity-time">{{activity.time}}</span>
+              </div>
+            </div>
+            
+            <div *ngIf="recentActivities.length === 0" class="empty-state small">
+              <p>Henüz aktivite bulunmuyor</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Need Help? -->
+        <div class="dashboard-section help-section">
+          <h2>Yardıma mı ihtiyacınız var?</h2>
+          <div class="help-content">
+            <p>Sık sorulan sorulara göz atın veya destek ekibimizle iletişime geçin</p>
+            <div class="help-actions">
+              <button class="btn btn-outline" (click)="openFAQ()">
+                SSS'yi Gör
+              </button>
+              <button class="btn btn-primary" (click)="contactSupport()">
+                Destek Al
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
