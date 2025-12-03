@@ -1,1 +1,381 @@
-<p>admin works!</p>
+<!-- src/app/pages/admin/admin.component.html -->
+<div class="admin-page">
+  <!-- Admin Header -->
+  <div class="admin-header">
+    <div class="container">
+      <div class="header-content">
+        <div>
+          <h1>Yönetici Paneli</h1>
+          <p class="subtitle">Platform yönetimi ve ürün onayları</p>
+        </div>
+        <div class="admin-actions">
+          <button class="btn btn-outline" (click)="refreshData()">
+            <span class="btn-icon">🔄</span>
+            Yenile
+          </button>
+          <button class="btn btn-primary" (click)="exportData()">
+            <span class="btn-icon">📊</span>
+            Rapor Al
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-content">
+          <div class="stat-value">{{stats.totalProducts}}</div>
+          <div class="stat-label">Toplam Ürün</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <div class="stat-value">{{stats.pendingApproval}}</div>
+          <div class="stat-label">Onay Bekleyen</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👤</div>
+        <div class="stat-content">
+          <div class="stat-value">{{stats.totalUsers}}</div>
+          <div class="stat-label">Toplam Kullanıcı</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🚚</div>
+        <div class="stat-content">
+          <div class="stat-value">{{stats.shippedToday}}</div>
+          <div class="stat-label">Bugün Kargolanan</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="admin-tabs">
+      <div class="tabs-header">
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'pending'"
+          (click)="setActiveTab('pending')">
+          Onay Bekleyen Ürünler
+          <span class="tab-badge">{{pendingProducts.length}}</span>
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'users'"
+          (click)="setActiveTab('users')">
+          Kullanıcılar
+          <span class="tab-badge">{{users.length}}</span>
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'reports'"
+          (click)="setActiveTab('reports')">
+          Raporlar
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'settings'"
+          (click)="setActiveTab('settings')">
+          Ayarlar
+        </button>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Pending Products Tab -->
+        <div *ngIf="activeTab === 'pending'" class="tab-pane">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Ürün</th>
+                  <th>Bağışçı</th>
+                  <th>Kategori</th>
+                  <th>Durum</th>
+                  <th>Tarih</th>
+                  <th>İşlemler</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let product of pendingProducts" class="table-row">
+                  <td class="product-cell">
+                    <div class="product-info">
+                      <div class="product-image">
+                        <img [src]="product.images[0] || 'assets/images/default-product.jpg'" [alt]="product.name">
+                      </div>
+                      <div class="product-details">
+                        <strong>{{product.name}}</strong>
+                        <p class="product-description">{{truncateText(product.description, 60)}}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-avatar">{{product.donorName.charAt(0)}}</div>
+                      <div>
+                        <div>{{product.donorName}}</div>
+                        <small>{{product.donorCity}}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="category-badge">{{product.category}}</span>
+                  </td>
+                  <td>
+                    <span class="status-badge pending">Onay Bekliyor</span>
+                  </td>
+                  <td>
+                    {{formatDate(product.createdAt)}}
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn btn-sm btn-success" (click)="approveProduct(product)">
+                        <span class="btn-icon">✓</span>
+                        Onayla
+                      </button>
+                      <button class="btn btn-sm btn-outline" (click)="viewProductDetails(product)">
+                        <span class="btn-icon">👁️</span>
+                        Detay
+                      </button>
+                      <button class="btn btn-sm btn-danger" (click)="rejectProduct(product)">
+                        <span class="btn-icon">✗</span>
+                        Reddet
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="pendingProducts.length === 0" class="empty-state">
+            <div class="empty-icon">✅</div>
+            <h3>Onay bekleyen ürün bulunmuyor</h3>
+            <p>Tüm ürünler onaylandı</p>
+          </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div *ngIf="activeTab === 'users'" class="tab-pane">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Kullanıcı</th>
+                  <th>Tip</th>
+                  <th>Bağış Sayısı</th>
+                  <th>Son Giriş</th>
+                  <th>Durum</th>
+                  <th>İşlemler</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of users" class="table-row">
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-avatar">{{user.name.charAt(0)}}</div>
+                      <div>
+                        <div>{{user.name}}</div>
+                        <small>{{user.email}}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span [class]="'user-type-badge ' + user.type">
+                      {{user.type === 'donor' ? 'Bağışçı' : 'Alıcı'}}
+                    </span>
+                  </td>
+                  <td>
+                    {{user.donationCount}}
+                  </td>
+                  <td>
+                    {{formatDate(user.lastLogin)}}
+                  </td>
+                  <td>
+                    <span [class]="'status-badge ' + (user.isActive ? 'active' : 'inactive')">
+                      {{user.isActive ? 'Aktif' : 'Pasif'}}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn btn-sm btn-outline" (click)="viewUserProfile(user)">
+                        Profil
+                      </button>
+                      <button 
+                        class="btn btn-sm" 
+                        [class]="user.isActive ? 'btn-warning' : 'btn-success'"
+                        (click)="toggleUserStatus(user)">
+                        {{user.isActive ? 'Devre Dışı Bırak' : 'Aktif Et'}}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div *ngIf="activeTab === 'reports'" class="tab-pane">
+          <div class="reports-grid">
+            <div class="report-card">
+              <h3>📈 Aylık İstatistikler</h3>
+              <div class="report-content">
+                <div class="report-item">
+                  <span>Toplam Bağış:</span>
+                  <strong>247</strong>
+                </div>
+                <div class="report-item">
+                  <span>Yeni Kullanıcı:</span>
+                  <strong>42</strong>
+                </div>
+                <div class="report-item">
+                  <span>Tamamlanan Teslimat:</span>
+                  <strong>189</strong>
+                </div>
+                <div class="report-item">
+                  <span>Ortalama Onay Süresi:</span>
+                  <strong>1.5 gün</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="report-card">
+              <h3>🏆 En Aktif Bağışçılar</h3>
+              <div class="report-content">
+                <div *ngFor="let donor of topDonors" class="donor-item">
+                  <div class="donor-info">
+                    <div class="donor-avatar">{{donor.name.charAt(0)}}</div>
+                    <div>
+                      <div>{{donor.name}}</div>
+                      <small>{{donor.city}}</small>
+                    </div>
+                  </div>
+                  <span class="donor-count">{{donor.count}} bağış</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="report-card">
+              <h3>📍 Şehir Bazlı Dağılım</h3>
+              <div class="report-content">
+                <div *ngFor="let city of cityDistribution" class="city-item">
+                  <span>{{city.name}}</span>
+                  <div class="city-bar">
+                    <div class="bar-fill" [style.width.%]="city.percentage"></div>
+                  </div>
+                  <span>{{city.count}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-actions">
+            <button class="btn btn-outline" (click)="generateMonthlyReport()">
+              📅 Aylık Rapor Oluştur
+            </button>
+            <button class="btn btn-outline" (click)="exportToExcel()">
+              📊 Excel'e Aktar
+            </button>
+            <button class="btn btn-primary" (click)="printReport()">
+              🖨️ Raporu Yazdır
+            </button>
+          </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div *ngIf="activeTab === 'settings'" class="tab-pane">
+          <div class="settings-grid">
+            <div class="settings-card">
+              <h3>⚙️ Platform Ayarları</h3>
+              <div class="settings-form">
+                <div class="form-group">
+                  <label class="form-label">Otomatik Onay</label>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="autoApprove" [(ngModel)]="settings.autoApprove">
+                    <label for="autoApprove" class="toggle-slider"></label>
+                  </div>
+                  <div class="form-hint">Güvenilir kullanıcıların ürünlerini otomatik onayla</div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Maksimum Günlük Bağış</label>
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    [(ngModel)]="settings.maxDailyDonations"
+                    min="1"
+                    max="10">
+                  <div class="form-hint">Bir kullanıcının günlük maksimum bağış sayısı</div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">E-posta Bildirimleri</label>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="emailNotifications" [(ngModel)]="settings.emailNotifications">
+                    <label for="emailNotifications" class="toggle-slider"></label>
+                  </div>
+                  <div class="form-hint">Kullanıcılara işlem bildirimleri gönder</div>
+                </div>
+
+                <button class="btn btn-primary" (click)="saveSettings()">
+                  Ayarları Kaydet
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <h3>🔔 Bildirim Ayarları</h3>
+              <div class="notifications-list">
+                <div class="notification-item">
+                  <div class="notification-content">
+                    <strong>Yeni ürün onayı</strong>
+                    <p>Onay bekleyen ürün olduğunda bildirim gönder</p>
+                  </div>
+                  <div class="toggle-switch small">
+                    <input type="checkbox" id="notif1" checked>
+                    <label for="notif1" class="toggle-slider"></label>
+                  </div>
+                </div>
+                <div class="notification-item">
+                  <div class="notification-content">
+                    <strong>Kargo güncellemesi</strong>
+                    <p>Kargo durumu değiştiğinde bildirim gönder</p>
+                  </div>
+                  <div class="toggle-switch small">
+                    <input type="checkbox" id="notif2" checked>
+                    <label for="notif2" class="toggle-slider"></label>
+                  </div>
+                </div>
+                <div class="notification-item">
+                  <div class="notification-content">
+                    <strong>Haftalık rapor</strong>
+                    <p>Her hafta platform istatistiklerini gönder</p>
+                  </div>
+                  <div class="toggle-switch small">
+                    <input type="checkbox" id="notif3">
+                    <label for="notif3" class="toggle-slider"></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Yükleniyor...</p>
+    </div>
+  </div>
+</div>

@@ -24,6 +24,7 @@ import { CommonModule } from '@angular/common';
             <a routerLink="/products" routerLinkActive="active" class="nav-link">Ürünler</a>
             <a routerLink="/add-product" routerLinkActive="active" class="nav-link">Ürün Ekle</a>
             <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+            <a routerLink="/admin" class="nav-link">Admin</a>
           </div>
           
           <div class="navbar-actions">
