@@ -1,1 +1,247 @@
-<p>product-add works!</p>
+<!-- src/app/pages/product-add/product-add.component.html -->
+<div class="section">
+  <div class="container">
+    <!-- Form Header -->
+    <div class="form-header">
+      <a routerLink="/products" class="back-link">
+        ← Ürünlere Geri Dön
+      </a>
+      <h1>Ürün Bağış Formu</h1>
+      <p class="subtitle">Kullanmadığınız çocuk ürünlerini bağışlayın, ihtiyaç sahiplerine ulaştıralım</p>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+      <div class="step active">
+        <div class="step-number">1</div>
+        <div class="step-label">Ürün Bilgileri</div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-label">Fotoğraflar</div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-label">Önizleme</div>
+      </div>
+    </div>
+
+    <!-- Main Form -->
+    <div class="form-container">
+      <form (ngSubmit)="onSubmit()" #productForm="ngForm">
+        
+        <!-- Product Name -->
+        <div class="form-group">
+          <label for="productName" class="form-label">
+            Ürün Adı *
+            <span class="label-hint">Ne bağışlıyorsunuz?</span>
+          </label>
+          <input
+            type="text"
+            id="productName"
+            class="form-control"
+            placeholder="Örn: LEGO seti, bisiklet, kitap seti"
+            [(ngModel)]="productData.name"
+            name="name"
+            required
+            minlength="3"
+            maxlength="100">
+          <div class="form-hint">Ürününüzü net bir şekilde tanımlayın</div>
+        </div>
+
+        <!-- Category & Condition -->
+        <div class="row">
+          <div class="col-12 md:col-6">
+            <div class="form-group">
+              <label for="category" class="form-label">Kategori *</label>
+              <select
+                id="category"
+                class="form-control"
+                [(ngModel)]="productData.category"
+                name="category"
+                required>
+                <option value="" disabled selected>Kategori seçin</option>
+                <option *ngFor="let category of categories" [value]="category.value">
+                  {{category.icon}} {{category.label}}
+                </option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="col-12 md:col-6">
+            <div class="form-group">
+              <label for="condition" class="form-label">Ürün Durumu *</label>
+              <select
+                id="condition"
+                class="form-control"
+                [(ngModel)]="productData.condition"
+                name="condition"
+                required>
+                <option value="" disabled selected>Durum seçin</option>
+                <option *ngFor="let condition of conditions" [value]="condition.value">
+                  {{condition.label}}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Age Group & Urgent -->
+        <div class="row">
+          <div class="col-12 md:col-6">
+            <div class="form-group">
+              <label for="ageGroup" class="form-label">Yaş Grubu *</label>
+              <select
+                id="ageGroup"
+                class="form-control"
+                [(ngModel)]="productData.ageGroup"
+                name="ageGroup"
+                required>
+                <option value="" disabled selected>Yaş grubu seçin</option>
+                <option *ngFor="let age of ageGroups" [value]="age.value">
+                  {{age.label}}
+                </option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="col-12 md:col-6">
+            <div class="form-group">
+              <label class="form-label">Acil İhtiyaç</label>
+              <div class="urgent-toggle">
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="productData.isUrgent"
+                    name="isUrgent">
+                  <span class="toggle-slider"></span>
+                </label>
+                <div class="toggle-label">
+                  <strong>Bu ürün acil ihtiyaçtır</strong>
+                  <span class="toggle-hint">Acil ihtiyaç ürünleri önceliklidir</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="description" class="form-label">
+            Açıklama *
+            <span class="label-hint">Ürününüzü detaylıca anlatın</span>
+          </label>
+          <textarea
+            id="description"
+            class="form-control"
+            rows="5"
+            placeholder="Ürünün markası, modeli, rengi, boyutu, varsa kusurları, kaç yıllık olduğu gibi detayları yazın..."
+            [(ngModel)]="productData.description"
+            name="description"
+            required
+            minlength="20"
+            maxlength="1000"></textarea>
+          <div class="form-hint">En az 20 karakter. Detaylı açıklama ürününüzün daha hızlı onaylanmasını sağlar</div>
+          <div class="char-count">{{productData.description?.length || 0}} / 1000</div>
+        </div>
+
+        <!-- Image Upload -->
+        <div class="form-group">
+          <label class="form-label">
+            Ürün Fotoğrafları
+            <span class="label-hint">En iyi görüntü için iyi aydınlatılmış fotoğraflar yükleyin</span>
+          </label>
+          
+          <div class="image-upload-area" (click)="triggerFileInput()">
+            <div class="upload-icon">📷</div>
+            <h3>Fotoğrafları Yükle</h3>
+            <p>En fazla 5 fotoğraf yükleyebilirsiniz</p>
+            <input
+              type="file"
+              #fileInput
+              (change)="onFileSelected($event)"
+              multiple
+              accept="image/*"
+              class="file-input"
+              hidden>
+          </div>
+          
+          <!-- Selected Images Preview -->
+          <div *ngIf="selectedImages.length > 0" class="image-preview-grid">
+            <div *ngFor="let image of selectedImages; let i = index" class="image-preview">
+              <img [src]="image.preview" [alt]="'Ürün fotoğrafı ' + (i + 1)">
+              <button type="button" class="remove-image" (click)="removeImage(i)">
+                ×
+              </button>
+            </div>
+          </div>
+          
+          <div class="form-hint">Önerilen: Ürünün farklı açılardan, iyi aydınlatılmış 3-5 fotoğrafı</div>
+        </div>
+
+        <!-- Additional Notes -->
+        <div class="form-group">
+          <label for="notes" class="form-label">Ek Notlar (Opsiyonel)</label>
+          <textarea
+            id="notes"
+            class="form-control"
+            rows="3"
+            placeholder="Varsa eklemek istedikleriniz: Kargo ölçüleri, özel paketleme gereksinimi, teslimat için özel günler..."
+            [(ngModel)]="productData.notes"
+            name="notes"
+            maxlength="500"></textarea>
+          <div class="char-count">{{productData.notes?.length || 0}} / 500</div>
+        </div>
+
+        <!-- Terms -->
+        <div class="form-group terms-group">
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              [(ngModel)]="acceptTerms"
+              name="acceptTerms"
+              required>
+            <span>
+              <strong>Bağış Koşullarını kabul ediyorum:</strong>
+              Ürünümün gerçek durumunu doğru şekilde belirttim. Ürünüm onaylandıktan sonra, 
+              ihtiyaç sahibine ücretsiz olarak kargolayacağımı veya platformun kargo anlaşmasına uyacağımı kabul ediyorum. 
+              Yanıltıcı bilgi verdiğim tespit edilirse hesabımın askıya alınabileceğini biliyorum.
+            </span>
+          </label>
+          <div *ngIf="productForm.submitted && !acceptTerms" class="error-text">
+            Bağış koşullarını kabul etmelisiniz
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn btn-outline"
+            routerLink="/products">
+            İptal
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary btn-lg"
+            [disabled]="isSubmitting || !acceptTerms">
+            <span *ngIf="!isSubmitting">Ürünü Bağışla</span>
+            <span *ngIf="isSubmitting">Gönderiliyor...</span>
+          </button>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+          <h4>📦 Bağış Süreci</h4>
+          <ul>
+            <li>Ürününüz ekibimiz tarafından incelenecek ve onaylanacak</li>
+            <li>Onay süresi 1-3 iş günü sürebilir</li>
+            <li>Onaylandıktan sonra ürününüz "Mevcut Ürünler" listesinde görünecek</li>
+            <li>Talep eden kişi bulunduğunda sizinle iletişime geçilecek</li>
+            <li>Kargo ücreti platform tarafından karşılanacaktır</li>
+          </ul>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

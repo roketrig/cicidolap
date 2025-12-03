@@ -1,1 +1,197 @@
-<p>home works!</p>
+<!-- src/app/pages/home/home.component.html -->
+<div class="home-page">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1 class="hero-title">
+            Kullanmadığınız Çocuk Ürünlerini
+            <span class="highlight">Bağışlayın</span>
+          </h1>
+          <p class="hero-subtitle">
+            İhtiyaç sahibi ailelere ulaştıralım. Tamamen gönüllü, ücretsiz bir platform.
+          </p>
+          <div class="hero-actions">
+            <a routerLink="/products" class="btn btn-primary btn-lg">
+              <span class="btn-icon">🔍</span>
+              Ürünleri Keşfet
+            </a>
+            <a routerLink="/add-product" class="btn btn-outline btn-lg">
+              <span class="btn-icon">❤️</span>
+              Hemen Bağış Yap
+            </a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat">
+              <div class="stat-number">1,247+</div>
+              <div class="stat-label">Bağışlanan Ürün</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">856+</div>
+              <div class="stat-label">Mutlu Aile</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">47+</div>
+              <div class="stat-label">Şehir</div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-image">
+          <div class="image-placeholder">
+            <div class="floating-icon">🎁</div>
+            <div class="floating-icon">🧸</div>
+            <div class="floating-icon">📚</div>
+            <div class="floating-icon">👕</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-it-works section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Nasıl Çalışır?</h2>
+        <p>3 kolay adımda ürünlerinizi ihtiyaç sahiplerine ulaştırın</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-icon">1</div>
+          <h3>Ürününüzü Yükleyin</h3>
+          <p>Formu doldurup fotoğraflarını ekleyin. Detaylı açıklama onay sürecini hızlandırır.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon">2</div>
+          <h3>Onay Bekleyin</h3>
+          <p>Ekibimiz ürünü inceleyip onaylar. Genellikle 1-3 iş günü içinde tamamlanır.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon">3</div>
+          <h3>Kargoya Verilsin</h3>
+          <p>Biz ürünü paketleyip kargoya veririz. Tüm kargo ücretleri platform tarafından karşılanır.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section class="featured-products section bg-light">
+    <div class="container">
+      <div class="section-header">
+        <h2>Son Eklenen Ürünler</h2>
+        <p>Yakın zamanda bağışlanan ürünleri keşfedin</p>
+        <a routerLink="/products" class="view-all-link">
+          Tümünü Gör →
+        </a>
+      </div>
+      
+      <div *ngIf="featuredProducts.length > 0" class="products-grid">
+        <div *ngFor="let product of featuredProducts" class="product-card">
+          <div class="product-card-inner">
+            <!-- Image -->
+            <div class="product-image">
+              <img [src]="product.images[0] || 'assets/images/default-product.jpg'" [alt]="product.name">
+              <div class="product-badge" [class]="product.isUrgent ? 'badge-urgent' : 'badge-category'">
+                {{product.isUrgent ? '🚨 Acil' : product.category}}
+              </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="product-content">
+              <h3 class="product-title">{{product.name}}</h3>
+              <p class="product-description">{{truncateText(product.description, 80)}}</p>
+              
+              <div class="product-meta">
+                <span class="meta-item">
+                  <span class="meta-icon">📍</span>
+                  {{product.donorCity}}
+                </span>
+                <span class="meta-item">
+                  <span class="meta-icon">👶</span>
+                  {{product.ageGroup}}
+                </span>
+              </div>
+              
+              <div class="product-footer">
+                <span class="product-condition">{{product.condition}}</span>
+                <a [routerLink]="['/product', product.id]" class="btn btn-sm btn-outline">
+                  Detay
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="loading">
+        <div class="spinner"></div>
+        <p>Ürünler yükleniyor...</p>
+      </div>
+      
+      <!-- No Products -->
+      <div *ngIf="!isLoading && featuredProducts.length === 0" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>Henüz ürün bulunmuyor</h3>
+        <p>İlk bağışçı siz olun!</p>
+        <a routerLink="/add-product" class="btn btn-primary">
+          İlk Bağışı Yap
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Donate -->
+  <section class="why-donate section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Neden Bağış Yapmalısınız?</h2>
+        <p>Bağışınızın etkisini görün</p>
+      </div>
+      <div class="reasons-grid">
+        <div class="reason-card">
+          <div class="reason-icon">🌱</div>
+          <h3>Sürdürülebilirlik</h3>
+          <p>Kullanılmayan ürünleri çöpe gitmekten kurtarın, çevreye katkı sağlayın.</p>
+        </div>
+        <div class="reason-card">
+          <div class="reason-icon">🤝</div>
+          <h3>Toplumsal Dayanışma</h3>
+          <p>İhtiyaç sahibi ailelere destek olun, toplumsal dayanışmaya katkıda bulunun.</p>
+        </div>
+        <div class="reason-card">
+          <div class="reason-icon">😊</div>
+          <h3>Mutluluk Paylaşımı</h3>
+          <p>Bir çocuğun yüzündeki tebessümü görmenin verdiği mutluluğu yaşayın.</p>
+        </div>
+        <div class="reason-card">
+          <div class="reason-icon">📋</div>
+          <h3>Kolay Süreç</h3>
+          <p>Form doldur, fotoğraf yükle, kargoyu biz halledelim. Ücretsiz ve güvenli.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content">
+        <h2>Hemen Harekete Geçin!</h2>
+        <p>Bugün bir bağış yapın, yarın bir çocuğun yüzünü güldürün.</p>
+        <div class="cta-actions">
+          <a routerLink="/add-product" class="btn btn-primary btn-lg">
+            <span class="btn-icon">🎁</span>
+            Hemen Bağış Yap
+          </a>
+          <a routerLink="/products" class="btn btn-outline btn-lg">
+            <span class="btn-icon">🔍</span>
+            Ürünleri İncele
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

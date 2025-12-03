@@ -1,7 +1,7 @@
 // src/app/app.routes.ts (veya routes.ts)
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
-import { ProductList } from './pages/product-list/product-list';
+import { ProductListComponent } from './pages/product-list/product-list';
 import { ProductAdd } from './pages/product-add/product-add';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Admin } from './pages/admin/admin';
@@ -15,7 +15,7 @@ export const routes: Routes = [
   },
   { 
     path: 'products', 
-    component: ProductList 
+    component: ProductListComponent
   },
   { 
     path: 'add-product', 

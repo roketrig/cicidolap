@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
           <div class="navbar-brand">
             <a routerLink="/" class="logo">
               <span class="logo-icon">🎁</span>
-              <span class="logo-text">Çocuk Ürünleri Platformu</span>
+              <span class="logo-text">CiciDolap</span>
             </a>
           </div>
           
@@ -44,7 +44,7 @@ import { CommonModule } from '@angular/common';
       <div class="container">
         <div class="footer-content">
           <div class="footer-section">
-            <h3>Çocuk Ürünleri Platformu</h3>
+            <h3>CiciDolap</h3>
             <p>Kullanmadığınız çocuk ürünlerini bağışlayın, ihtiyaç sahiplerine ulaştıralım.</p>
           </div>
           

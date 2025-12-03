@@ -1,1 +1,162 @@
-<p>product-list works!</p>
+<!-- src/app/pages/product-list/product-list.component.html -->
+<div class="section">
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <h1>Mevcut Ürünler</h1>
+            <p class="subtitle">Bağışlanan çocuk ürünlerini görüntüleyin ve talep edin</p>
+
+            <div class="header-actions">
+                <a routerLink="/add-product" class="btn btn-primary">
+                    <span class="btn-icon">+</span>
+                    Yeni Ürün Bağışla
+                </a>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-card card">
+            <div class="filters-header">
+                <h3>Filtreler</h3>
+                <button class="btn btn-text" (click)="clearFilters()">
+                    Filtreleri Temizle
+                </button>
+            </div>
+
+            <div class="filters-grid">
+                <!-- Kategori Filtresi -->
+                <div class="filter-group">
+                    <label class="filter-label">Kategori</label>
+                    <div class="category-filters">
+                        <button *ngFor="let category of categories" class="category-btn"
+                            [class.active]="selectedCategory === category.value"
+                            (click)="filterByCategory(category.value)">
+                            <span class="category-icon">{{category.icon}}</span>
+                            {{category.label}}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Durum Filtresi -->
+                <div class="filter-group">
+                    <label class="filter-label">Ürün Durumu</label>
+                    <select class="form-control" [(ngModel)]="selectedCondition" (change)="applyFilters()">
+                        <option value="">Tümü</option>
+                        <option *ngFor="let condition of conditions" [value]="condition.value">
+                            {{condition.label}}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Sıralama -->
+                <div class="filter-group">
+                    <label class="filter-label">Sırala</label>
+                    <select class="form-control" [(ngModel)]="sortBy" (change)="applyFilters()">
+                        <option value="newest">En Yeniler</option>
+                        <option value="oldest">En Eski</option>
+                        <option value="urgent">Önce Acil</option>
+                    </select>
+                </div>
+
+                <!-- Arama -->
+                <div class="filter-group">
+                    <label class="filter-label">Ara</label>
+                    <div class="search-input">
+                        <input type="text" class="form-control" placeholder="Ürün adı veya açıklama..."
+                            [(ngModel)]="searchTerm" (input)="applyFilters()">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{totalProducts}}</div>
+                <div class="stat-label">Toplam Ürün</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{approvedProducts}}</div>
+                <div class="stat-label">Yayında</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{urgentProducts}}</div>
+                <div class="stat-label urgent">Acil İhtiyaç</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{pendingProducts}}</div>
+                <div class="stat-label">Onay Bekleyen</div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid">
+            <div *ngFor="let product of filteredProducts" class="product-card-wrapper">
+                <div class="product-card" [class.urgent]="product.isUrgent">
+                    <!-- Urgent Badge -->
+                    <div *ngIf="product.isUrgent" class="urgent-badge">
+                        <span class="badge badge-danger">🚨 Acil İhtiyaç</span>
+                    </div>
+
+                    <!-- Image -->
+                    <div class="product-image">
+                        <img [src]="product.images[0] || 'assets/images/default-product.jpg'" [alt]="product.name">
+                        <div class="product-status" [class]="getStatusClass(product.status)">
+                            {{product.status}}
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="product-content">
+                        <div class="product-category">
+                            <span class="category-badge">{{product.category}}</span>
+                            <span class="age-badge">{{product.ageGroup}}</span>
+                        </div>
+
+                        <h3 class="product-title">{{product.name}}</h3>
+                        <p class="product-description">{{product.description}}</p>
+
+                        <div class="product-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Durum:</span>
+                                <span class="detail-value">{{product.condition}}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Bağışçı:</span>
+                                <span class="detail-value">{{product.donorName}} • {{product.donorCity}}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Eklenme:</span>
+                                <span class="detail-value">{{formatDate(product.createdAt)}}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <!-- YENİ DOĞRU: -->
+                    <button class="btn btn-outline" [routerLink]="['/product', product.id]"
+                        [disabled]="product.status !== ProductStatus.APPROVED">
+                        Detay
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Products -->
+        <div *ngIf="filteredProducts.length === 0 && !isLoading" class="empty-state">
+            <div class="empty-icon">📦</div>
+            <h3>Ürün bulunamadı</h3>
+            <p>Seçtiğiniz filtrelere uygun ürün bulunamadı.</p>
+            <button class="btn btn-outline" (click)="clearFilters()">
+                Filtreleri Temizle
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="isLoading" class="loading">
+            <div class="spinner"></div>
+            <p>Ürünler yükleniyor...</p>
+        </div>
+    </div>
+</div>
