@@ -1,0 +1,100 @@
+<!-- src/app/app.component.html -->
+<header class="header">
+  <div class="container">
+    <nav class="navbar">
+      <!-- Logo -->
+      <div class="navbar-brand">
+        <a routerLink="/" class="logo">
+          <span class="logo-icon">🎁</span>
+          <span class="logo-text">CiciDolap</span>
+        </a>
+      </div>
+      
+      <!-- Navigation Menu -->
+      <div class="navbar-menu">
+        <a routerLink="/" routerLinkActive="active" class="nav-link">Ana Sayfa</a>
+        <a routerLink="/products" routerLinkActive="active" class="nav-link">Ürünler</a>
+        <a routerLink="/add-product" routerLinkActive="active" class="nav-link">Ürün Ekle</a>
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+        
+        <!-- Admin Link - Only for Admins -->
+        <a *ngIf="isAdmin" routerLink="/admin" routerLinkActive="active" class="nav-link admin-link">
+          ⚙️ Admin
+        </a>
+      </div>
+      
+      <!-- User Actions -->
+      <div class="navbar-actions">
+        <ng-container *ngIf="!isLoggedIn; else loggedInMenu">
+          <a routerLink="/login" class="btn btn-outline btn-sm">Giriş Yap</a>
+          <a routerLink="/register" class="btn btn-primary btn-sm">Kayıt Ol</a>
+        </ng-container>
+        
+        <ng-template #loggedInMenu>
+          <div class="user-menu">
+            <div class="user-info">
+              <span class="user-name">{{currentUser?.name}}</span>
+              <span class="user-role">{{currentUser?.type === 'donor' ? 'Bağışçı' : 'Alıcı'}}</span>
+            </div>
+            <div class="dropdown">
+              <button class="dropdown-toggle">
+                👤
+              </button>
+              <div class="dropdown-menu">
+                <a routerLink="/dashboard" class="dropdown-item">Dashboard</a>
+                <a routerLink="/profile" class="dropdown-item">Profilim</a>
+                <div class="dropdown-divider"></div>
+                <button (click)="logout()" class="dropdown-item logout">Çıkış Yap</button>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main class="main">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>CiciDolap</h3>
+        <p>Kullanmadığınız çocuk ürünlerini bağışlayın, ihtiyaç sahiplerine ulaştıralım.</p>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Hızlı Bağlantılar</h4>
+        <a routerLink="/products">Ürünleri Gör</a>
+        <a routerLink="/add-product">Ürün Bağışla</a>
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/about">Hakkımızda</a>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Destek</h4>
+        <a routerLink="/help">Yardım</a>
+        <a routerLink="/contact">İletişim</a>
+        <a routerLink="/terms">Kullanım Koşulları</a>
+        <a routerLink="/privacy">Gizlilik Politikası</a>
+      </div>
+      
+      <div class="footer-section">
+        <h4>İletişim</h4>
+        <p>📧 destek@cocukurunleri.com</p>
+        <p>📞 +90 555 123 45 67</p>
+        <p>📍 İstanbul, Türkiye</p>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>© 2024 Çocuk Ürünleri Platformu - Tüm hakları saklıdır</p>
+      <p class="version">v1.0.0</p>
+    </div>
+  </div>
+</footer>

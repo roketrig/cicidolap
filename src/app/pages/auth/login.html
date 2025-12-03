@@ -1,1 +1,66 @@
-<p>login works!</p>
+<!-- src/app/pages/auth/login/login.component.html -->
+<div class="login-container">
+  <div class="login-card">
+    <h2>Giriş Yap</h2>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">E-posta</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email"
+          [class.is-invalid]="f['email']?.invalid && (f['email']?.dirty || f['email']?.touched)"
+          placeholder="ornek@email.com"
+        >
+        <div *ngIf="f['email']?.invalid && (f['email']?.dirty || f['email']?.touched)" class="error-message">
+          <small *ngIf="f['email']?.errors?.['required']">E-posta zorunludur</small>
+          <small *ngIf="f['email']?.errors?.['email']">Geçerli bir e-posta adresi girin</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Şifre</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password"
+          [class.is-invalid]="f['password']?.invalid && (f['password']?.dirty || f['password']?.touched)"
+          placeholder="••••••"
+        >
+        <div *ngIf="f['password']?.invalid && (f['password']?.dirty || f['password']?.touched)" class="error-message">
+          <small *ngIf="f['password']?.errors?.['required']">Şifre zorunludur</small>
+          <small *ngIf="f['password']?.errors?.['minlength']">En az 6 karakter girin</small>
+        </div>
+      </div>
+
+      <div class="form-group checkbox">
+        <input 
+          type="checkbox" 
+          id="rememberMe" 
+          formControlName="rememberMe"
+        >
+        <label for="rememberMe">Beni hatırla</label>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-error">
+        {{ errorMessage }}
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn btn-primary"
+        [disabled]="isLoading || loginForm.invalid"
+      >
+        <span *ngIf="!isLoading">Giriş Yap</span>
+        <span *ngIf="isLoading">Giriş yapılıyor...</span>
+      </button>
+    </form>
+
+    <div class="links">
+      <a routerLink="/forgot-password">Şifremi Unuttum</a>
+      <span>•</span>
+      <a routerLink="/register">Hesap Oluştur</a>
+    </div>
+  </div>
+</div>

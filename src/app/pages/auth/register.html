@@ -1,1 +1,211 @@
-<p>register works!</p>
+<!-- src/app/pages/auth/register/register.html -->
+<div class="section">
+  <div class="container">
+    <div class="row justify-center">
+      <div class="col-12 md:col-8 lg:col-6">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="text-center">Hesap Oluştur</h2>
+            <p class="text-center text-muted">İkinci el platformuna katıl, bağış yap veya ihtiyacın olanı bul</p>
+          </div>
+          
+          <form class="form" (ngSubmit)="onSubmit()" #registerForm="ngForm">
+            <!-- Success Message -->
+            <div *ngIf="successMessage" class="alert alert-success mb-3">
+              ✅ {{ successMessage }}
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="alert alert-error mb-3">
+              ⚠️ {{ errorMessage }}
+            </div>
+
+            <!-- Name Fields -->
+            <div class="row">
+              <div class="col-6">
+                <div class="form-group">
+                  <label for="firstName" class="form-label">Ad *</label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    class="form-control"
+                    placeholder="Adınız"
+                    [(ngModel)]="registerData.firstName"
+                    name="firstName"
+                    required>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="form-group">
+                  <label for="lastName" class="form-label">Soyad *</label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    class="form-control"
+                    placeholder="Soyadınız"
+                    [(ngModel)]="registerData.lastName"
+                    name="lastName"
+                    required>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+              <label for="email" class="form-label">E-posta *</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                placeholder="ornek@email.com"
+                [(ngModel)]="registerData.email"
+                name="email"
+                required
+                email>
+              <small class="text-muted">Giriş için bu e-posta adresini kullanacaksınız</small>
+            </div>
+
+            <!-- Password -->
+            <div class="row">
+              <div class="col-6">
+                <div class="form-group">
+                  <label for="password" class="form-label">Şifre *</label>
+                  <div class="password-input">
+                    <input
+                      [type]="showPassword ? 'text' : 'password'"
+                      id="password"
+                      class="form-control"
+                      placeholder="Şifreniz"
+                      [(ngModel)]="registerData.password"
+                      name="password"
+                      required
+                      minlength="6">
+                    <button type="button" class="password-toggle" (click)="togglePassword('password')" tabindex="-1">
+                      {{ showPassword ? '🙈' : '👁️' }}
+                    </button>
+                  </div>
+                  <small class="text-muted">En az 6 karakter</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="form-group">
+                  <label for="confirmPassword" class="form-label">Şifre Tekrar *</label>
+                  <div class="password-input">
+                    <input
+                      [type]="showConfirmPassword ? 'text' : 'password'"
+                      id="confirmPassword"
+                      class="form-control"
+                      placeholder="Şifrenizi tekrar girin"
+                      [(ngModel)]="confirmPassword"
+                      name="confirmPassword"
+                      required>
+                    <button type="button" class="password-toggle" (click)="togglePassword('confirm')" tabindex="-1">
+                      {{ showConfirmPassword ? '🙈' : '👁️' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phone & City -->
+            <div class="row">
+              <div class="col-6">
+                <div class="form-group">
+                  <label for="phone" class="form-label">Telefon *</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    class="form-control"
+                    placeholder="05XX XXX XX XX"
+                    [(ngModel)]="registerData.phone"
+                    name="phone"
+                    required>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="form-group">
+                  <label for="city" class="form-label">Şehir *</label>
+                  <select
+                    id="city"
+                    class="form-control"
+                    [(ngModel)]="registerData.city"
+                    name="city"
+                    required>
+                    <option value="" disabled selected>Şehir seçin</option>
+                    <option *ngFor="let city of cities" [value]="city.value">
+                      {{ city.name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- User Type -->
+            <div class="form-group">
+              <label class="form-label">Hesap Türü *</label>
+              <div class="user-type-options">
+                <label class="radio-option">
+                  <input
+                    type="radio"
+                    name="userType"
+                    [(ngModel)]="registerData.userType"
+                    value="donor"
+                    required>
+                  <div class="option-content">
+                    <span class="option-title">Bağışçı</span>
+                    <span class="option-desc">Eşyalarımı bağışlamak istiyorum</span>
+                  </div>
+                </label>
+                
+                <label class="radio-option">
+                  <input
+                    type="radio"
+                    name="userType"
+                    [(ngModel)]="registerData.userType"
+                    value="recipient"
+                    required>
+                  <div class="option-content">
+                    <span class="option-title">İhtiyaç Sahibi</span>
+                    <span class="option-desc">İhtiyacım olan eşyaları arıyorum</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Terms -->
+            <div class="form-group">
+              <label class="checkbox">
+                <input type="checkbox" [(ngModel)]="acceptTerms" name="acceptTerms" required>
+                <span>
+                  <a routerLink="/terms" class="link">Kullanım Koşulları</a>'nı ve 
+                  <a routerLink="/privacy" class="link">Gizlilik Politikası</a>'nı okudum ve kabul ediyorum *
+                </span>
+              </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button 
+              type="submit" 
+              class="btn btn-primary btn-lg w-100" 
+              [disabled]="loading">
+              <span *ngIf="!loading">Hesap Oluştur</span>
+              <span *ngIf="loading">Kayıt yapılıyor...</span>
+            </button>
+
+            <div class="divider">
+              <span>veya</span>
+            </div>
+
+            <!-- Login Link -->
+            <div class="text-center">
+              <p class="text-muted">Zaten hesabınız var mı?</p>
+              <a routerLink="/login" class="btn btn-outline w-100">
+                Giriş Yap
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

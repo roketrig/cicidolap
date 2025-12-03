@@ -7,38 +7,51 @@ import { Dashboard } from './pages/dashboard/dashboard';
 import { Admin } from './pages/admin/admin';
 import { Login } from './pages/auth/login';
 import { Register } from './pages/auth/register';
-
+import { ProductDetail } from './pages/product-detail/product-detail';
+import { Profile } from './pages/user-profile/user-profile';
+import { AuthGuard } from './guards/auth-guard';
+import { AdminGuard } from './guards/admin-guard';
 export const routes: Routes = [
-  { 
-    path: '', 
-    component: Home 
+  {
+    path: '',
+    component: Home
   },
-  { 
-    path: 'products', 
+  {
+    path: 'products',
     component: ProductListComponent
   },
-  { 
-    path: 'add-product', 
-    component: ProductAdd 
+  {
+    path: 'add-product',
+    component: ProductAdd
   },
-  { 
-    path: 'dashboard', 
-    component: Dashboard 
+  {
+    path: 'dashboard',
+    component: Dashboard
   },
-  { 
-    path: 'admin', 
-    component: Admin 
+  {
+    path: 'admin',
+    component: Admin,
+    canActivate: [AuthGuard, AdminGuard]
   },
-  { 
-    path: 'login', 
-    component: Login 
+  {
+    path: 'login',
+    component: Login
   },
-  { 
-    path: 'register', 
-    component: Register 
+  {
+    path: 'register',
+    component: Register
   },
-  { 
-    path: '**', 
-    redirectTo: '' 
+  {
+    path: 'product/:id',
+    component: ProductDetail
+  },
+  {
+    path: 'profile',
+    component: Profile,
+    canActivate: [AuthGuard] 
+  },
+  {
+    path: '**',
+    redirectTo: ''
   }
 ];

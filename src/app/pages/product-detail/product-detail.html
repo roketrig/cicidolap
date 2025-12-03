@@ -1,0 +1,256 @@
+<!-- src/app/pages/product-detail/product-detail.component.html -->
+<div class="product-detail-page">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Ürün yükleniyor...</p>
+    </div>
+  </div>
+
+  <!-- Product Not Found -->
+  <div *ngIf="!isLoading && !product" class="not-found">
+    <div class="not-found-content">
+      <div class="not-found-icon">🔍</div>
+      <h2>Ürün bulunamadı</h2>
+      <p>Aradığınız ürün mevcut değil veya kaldırılmış olabilir.</p>
+      <a routerLink="/products" class="btn btn-primary">
+        Ürünlere Geri Dön
+      </a>
+    </div>
+  </div>
+
+  <!-- Product Content -->
+  <div *ngIf="!isLoading && product" class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a routerLink="/">Ana Sayfa</a>
+      <span class="separator">/</span>
+      <a routerLink="/products">Ürünler</a>
+      <span class="separator">/</span>
+      <span class="current">{{product.name}}</span>
+    </nav>
+
+    <!-- Main Product Info -->
+    <div class="product-main">
+      <!-- Left Column - Images -->
+      <div class="product-images">
+        <!-- Main Image -->
+        <div class="main-image">
+          <img [src]="selectedImage || product.images[0] || 'assets/images/default-product.jpg'" 
+               [alt]="product.name"
+               (click)="openImageLightbox(selectedImage || product.images[0])">
+        </div>
+        
+        <!-- Thumbnails -->
+        <div *ngIf="product.images.length > 1" class="image-thumbnails">
+          <div *ngFor="let image of product.images; let i = index" 
+               class="thumbnail" 
+               [class.active]="selectedImage === image"
+               (click)="selectImage(image)">
+            <img [src]="image" [alt]="'Ürün fotoğrafı ' + (i + 1)">
+          </div>
+        </div>
+        
+        <!-- No Images -->
+        <div *ngIf="product.images.length === 0" class="no-images">
+          <div class="no-images-icon">📷</div>
+          <p>Fotoğraf bulunmuyor</p>
+        </div>
+      </div>
+
+      <!-- Right Column - Details -->
+      <div class="product-info">
+        <!-- Status & Category Badges -->
+        <div class="product-badges">
+          <span class="status-badge" [class]="getStatusClass(product.status)">
+            {{getStatusText(product.status)}}
+          </span>
+          <span class="category-badge">{{product.category}}</span>
+          <span *ngIf="product.isUrgent" class="urgent-badge">
+            🚨 Acil İhtiyaç
+          </span>
+        </div>
+
+        <!-- Product Title -->
+        <h1 class="product-title">{{product.name}}</h1>
+        
+        <!-- Product Meta -->
+        <div class="product-meta">
+          <div class="meta-item">
+            <span class="meta-icon">👶</span>
+            <span class="meta-label">Yaş Grubu:</span>
+            <span class="meta-value">{{product.ageGroup}}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-icon">🏷️</span>
+            <span class="meta-label">Durum:</span>
+            <span class="meta-value">{{product.condition}}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-icon">📍</span>
+            <span class="meta-label">Şehir:</span>
+            <span class="meta-value">{{product.donorCity}}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-icon">📅</span>
+            <span class="meta-label">Eklenme:</span>
+            <span class="meta-value">{{formatDate(product.createdAt)}}</span>
+          </div>
+        </div>
+
+        <!-- Donor Info -->
+        <div class="donor-card">
+          <div class="donor-header">
+            <div class="donor-avatar">{{product.donorName.charAt(0)}}</div>
+            <div class="donor-info">
+              <h3>{{product.donorName}}</h3>
+              <p class="donor-role">Bağışçı</p>
+            </div>
+            <div class="donor-stats">
+              <div class="donor-stat">
+                <div class="stat-number">{{donorStats.totalDonations}}</div>
+                <div class="stat-label">Bağış</div>
+              </div>
+              <div class="donor-stat">
+                <div class="stat-number">{{donorStats.rating}}</div>
+                <div class="stat-label">Puan</div>
+              </div>
+            </div>
+          </div>
+          <p class="donor-bio">
+            {{donorStats.bio || 'Bu bağışçı hakkında bilgi bulunmuyor.'}}
+          </p>
+          <button class="btn btn-outline btn-sm" (click)="contactDonor()">
+            <span class="btn-icon">💬</span>
+            Bağışçıyla İletişime Geç
+          </button>
+        </div>
+
+        <!-- Description -->
+        <div class="description-section">
+          <h3>Ürün Açıklaması</h3>
+          <div class="description-content">
+            <p>{{product.description}}</p>
+            
+            <div *ngIf="product.notes" class="additional-notes">
+              <h4>Ek Notlar:</h4>
+              <p>{{product.notes}}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-section">
+          <div *ngIf="product.status === productStatusEnum.APPROVED" class="available-actions">
+            <button class="btn btn-primary btn-lg" (click)="requestProduct()" [disabled]="isRequesting">
+              <span *ngIf="!isRequesting">
+                <span class="btn-icon">❤️</span>
+                Bu Ürünü Talep Et
+              </span>
+              <span *ngIf="isRequesting">Talep gönderiliyor...</span>
+            </button>
+            
+            <button class="btn btn-outline" (click)="addToWishlist()">
+              <span class="btn-icon">⭐</span>
+              Favorilere Ekle
+            </button>
+            
+            <button class="btn btn-text" (click)="shareProduct()">
+              <span class="btn-icon">↗️</span>
+              Paylaş
+            </button>
+          </div>
+          
+          <div *ngIf="product.status !== productStatusEnum.APPROVED" class="unavailable-message">
+            <div class="message-icon">⏳</div>
+            <div class="message-content">
+              <h4>Bu ürün şu anda talep edilemez</h4>
+              <p>
+                <span *ngIf="product.status === productStatusEnum.PENDING">Ürün onay bekliyor.</span>
+                <span *ngIf="product.status === productStatusEnum.RESERVED">Ürün başka bir kullanıcı tarafından rezerve edildi.</span>
+                <span *ngIf="product.status === productStatusEnum.SHIPPED">Ürün kargoda.</span>
+                <span *ngIf="product.status === productStatusEnum.DELIVERED">Ürün teslim edildi.</span>
+                <span *ngIf="product.status === productStatusEnum.REJECTED">Ürün reddedildi.</span>
+              </p>
+              <a routerLink="/products" class="btn btn-outline">
+                Diğer Ürünlere Göz At
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Safety Tips -->
+        <div class="safety-tips">
+          <h4>🛡️ Güvenli Bağış İpuçları</h4>
+          <ul>
+            <li>Kişisel bilgilerinizi (TC kimlik, kredi kartı vb.) paylaşmayın</li>
+            <li>Sadece platform üzerinden iletişim kurun</li>
+            <li>Ürünü görmeden ödeme yapmayın (bu platformda ödeme yok)</li>
+            <li>Şüpheli durumlarda destek ekibimizi bilgilendirin</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Similar Products -->
+    <div *ngIf="similarProducts.length > 0" class="similar-products">
+      <div class="section-header">
+        <h2>Benzer Ürünler</h2>
+        <p>Aynı kategorideki diğer ürünler</p>
+      </div>
+      
+      <div class="similar-grid">
+        <div *ngFor="let similar of similarProducts" class="similar-card">
+          <a [routerLink]="['/product', similar.id]" class="similar-link">
+            <div class="similar-image">
+              <img [src]="similar.images[0] || 'assets/images/default-product.jpg'" [alt]="similar.name">
+            </div>
+            <div class="similar-content">
+              <h3>{{similar.name}}</h3>
+              <p class="similar-meta">
+                <span>{{similar.category}}</span>
+                <span>•</span>
+                <span>{{similar.donorCity}}</span>
+              </p>
+              <span class="similar-price">Ücretsiz</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipping Info -->
+    <div class="shipping-info">
+      <div class="info-card">
+        <div class="info-icon">🚚</div>
+        <div class="info-content">
+          <h3>Ücretsiz Kargo</h3>
+          <p>Tüm bağış ürünleri için kargo ücreti platform tarafından karşılanır.</p>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">⏱️</div>
+        <div class="info-content">
+          <h3>Hızlı Onay</h3>
+          <p>Ürünler ortalama 1-3 iş günü içinde incelenir ve onaylanır.</p>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🛡️</div>
+        <div class="info-content">
+          <h3>Güvenli İletişim</h3>
+          <p>Tüm iletişim platform üzerinden güvenli şekilde yapılır.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div *ngIf="showLightbox" class="lightbox-overlay" (click)="closeLightbox()">
+    <div class="lightbox-content" (click)="$event.stopPropagation()">
+      <button class="lightbox-close" (click)="closeLightbox()">×</button>
+      <img [src]="lightboxImage" [alt]="product?.name">
+    </div>
+  </div>
+</div>

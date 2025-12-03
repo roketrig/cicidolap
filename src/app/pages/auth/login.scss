@@ -1,0 +1,132 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 200px);
+  padding: 20px;
+  background-color: #f5f5f5;
+}
+
+.login-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+
+  h2 {
+    margin-bottom: 30px;
+    text-align: center;
+    color: #333;
+  }
+}
+
+.form-group {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+  }
+
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+
+    &:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    }
+
+    &.is-invalid {
+      border-color: #f44336;
+    }
+  }
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+
+  input[type="checkbox"] {
+    margin-right: 8px;
+  }
+
+  label {
+    margin-bottom: 0;
+    cursor: pointer;
+  }
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+
+  &.alert-error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+  }
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &-primary {
+    background-color: #4CAF50;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #45a049;
+    }
+
+    &:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.links {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+
+  a {
+    color: #4CAF50;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  span {
+    margin: 0 10px;
+    color: #999;
+  }
+}

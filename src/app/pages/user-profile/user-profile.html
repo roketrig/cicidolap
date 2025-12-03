@@ -1,0 +1,673 @@
+<!-- src/app/pages/profile/profile.component.html -->
+<div class="profile-page">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Profil yükleniyor...</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="header-content">
+        <div class="avatar-section">
+          <div class="avatar-large" (click)="changeAvatar()">
+            <div class="avatar-initials">{{getUserInitials()}}</div>
+            <div class="avatar-change">📷</div>
+          </div>
+          <div class="avatar-info">
+            <h1>{{user.name}}</h1>
+            <p class="user-email">{{user.email}}</p>
+            <div class="user-badges">
+              <span class="badge" [class]="user.type === 'donor' ? 'badge-primary' : 'badge-success'">
+                {{user.type === 'donor' ? 'Bağışçı' : 'Alıcı'}}
+              </span>
+              <span class="badge" [class]="user.isVerified ? 'badge-success' : 'badge-warning'">
+                {{user.isVerified ? '✓ Doğrulanmış' : 'Doğrulanmamış'}}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-stats">
+          <div class="stat">
+            <div class="stat-number">{{stats.totalDonations}}</div>
+            <div class="stat-label">Bağış</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">{{stats.totalReceived}}</div>
+            <div class="stat-label">Alınan</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">{{stats.memberSince}}</div>
+            <div class="stat-label">Gündür Üye</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="profile-tabs">
+      <div class="tabs-header">
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'personal'"
+          (click)="setActiveTab('personal')">
+          <span class="tab-icon">👤</span>
+          Kişisel Bilgiler
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'address'"
+          (click)="setActiveTab('address')">
+          <span class="tab-icon">📍</span>
+          Adreslerim
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'security'"
+          (click)="setActiveTab('security')">
+          <span class="tab-icon">🔒</span>
+          Güvenlik
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab === 'preferences'"
+          (click)="setActiveTab('preferences')">
+          <span class="tab-icon">⚙️</span>
+          Tercihler
+        </button>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Personal Info Tab -->
+        <div *ngIf="activeTab === 'personal'" class="tab-pane">
+          <form (ngSubmit)="updatePersonalInfo()" #personalForm="ngForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="firstName" class="form-label">Ad *</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  class="form-control"
+                  [(ngModel)]="personalInfo.firstName"
+                  name="firstName"
+                  required>
+              </div>
+              
+              <div class="form-group">
+                <label for="lastName" class="form-label">Soyad *</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  class="form-control"
+                  [(ngModel)]="personalInfo.lastName"
+                  name="lastName"
+                  required>
+              </div>
+              
+              <div class="form-group">
+                <label for="email" class="form-label">E-posta *</label>
+                <input
+                  type="email"
+                  id="email"
+                  class="form-control"
+                  [(ngModel)]="personalInfo.email"
+                  name="email"
+                  required
+                  email>
+              </div>
+              
+              <div class="form-group">
+                <label for="phone" class="form-label">Telefon</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  class="form-control"
+                  [(ngModel)]="personalInfo.phone"
+                  name="phone"
+                  placeholder="05XX XXX XX XX">
+              </div>
+              
+              <div class="form-group">
+                <label for="city" class="form-label">Şehir</label>
+                <select
+                  id="city"
+                  class="form-control"
+                  [(ngModel)]="personalInfo.city"
+                  name="city">
+                  <option value="">Şehir seçin</option>
+                  <option *ngFor="let city of cities" [value]="city">
+                    {{city}}
+                  </option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="birthDate" class="form-label">Doğum Tarihi</label>
+                <input
+                  type="date"
+                  id="birthDate"
+                  class="form-control"
+                  [(ngModel)]="personalInfo.birthDate"
+                  name="birthDate">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="bio" class="form-label">Hakkımda</label>
+              <textarea
+                id="bio"
+                class="form-control"
+                rows="4"
+                [(ngModel)]="personalInfo.bio"
+                name="bio"
+                placeholder="Kendinizden bahsedin (isteğe bağlı)..."
+                maxlength="500"></textarea>
+              <div class="char-count">{{personalInfo.bio.length || 0}} / 500</div>
+            </div>
+            
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn btn-outline"
+                (click)="cancelPersonalInfo()">
+                İptal
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="isSaving || !personalForm.form.valid">
+                <span *ngIf="!isSaving">Değişiklikleri Kaydet</span>
+                <span *ngIf="isSaving">Kaydediliyor...</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Address Tab -->
+        <div *ngIf="activeTab === 'address'" class="tab-pane">
+          <div class="address-header">
+            <h3>Adreslerim</h3>
+            <button class="btn btn-primary btn-sm" (click)="addNewAddress()">
+              <span class="btn-icon">+</span>
+              Yeni Adres Ekle
+            </button>
+          </div>
+          
+          <div class="address-list">
+            <div *ngFor="let address of addresses; let i = index" class="address-card">
+              <div class="address-header">
+                <div class="address-title">
+                  <h4>{{address.title}}</h4>
+                  <span *ngIf="address.isDefault" class="default-badge">Varsayılan</span>
+                </div>
+                <div class="address-actions">
+                  <button class="btn-icon" (click)="editAddress(address)">
+                    ✏️
+                  </button>
+                  <button class="btn-icon" (click)="deleteAddress(address)">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              
+              <div class="address-content">
+                <p class="address-text">{{address.fullName}}</p>
+                <p class="address-text">{{address.address}}</p>
+                <p class="address-text">{{address.district}} / {{address.city}}</p>
+                <p class="address-text">📞 {{address.phone}}</p>
+              </div>
+              
+              <div class="address-footer">
+                <button
+                  class="btn btn-outline btn-sm"
+                  (click)="setDefaultAddress(address)"
+                  [disabled]="address.isDefault">
+                  Varsayılan Yap
+                </button>
+              </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div *ngIf="addresses.length === 0" class="empty-address">
+              <div class="empty-icon">📍</div>
+              <h4>Henüz adres eklemediniz</h4>
+              <p>Bağış almak veya göndermek için bir adres ekleyin</p>
+              <button class="btn btn-primary" (click)="addNewAddress()">
+                İlk Adresi Ekle
+              </button>
+            </div>
+          </div>
+          
+          <!-- Address Form Modal -->
+          <div *ngIf="showAddressForm" class="modal-overlay" (click)="closeAddressForm()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>{{editingAddress ? 'Adresi Düzenle' : 'Yeni Adres Ekle'}}</h3>
+                <button class="modal-close" (click)="closeAddressForm()">×</button>
+              </div>
+              
+              <form (ngSubmit)="saveAddress()" #addressForm="ngForm" class="modal-form">
+                <div class="form-group">
+                  <label for="addressTitle" class="form-label">Adres Başlığı *</label>
+                  <input
+                    type="text"
+                    id="addressTitle"
+                    class="form-control"
+                    [(ngModel)]="addressFormData.title"
+                    name="title"
+                    placeholder="Örn: Ev Adresim, İş Adresim"
+                    required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="fullName" class="form-label">Ad Soyad *</label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    class="form-control"
+                    [(ngModel)]="addressFormData.fullName"
+                    name="fullName"
+                    required>
+                </div>
+                
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="addressCity" class="form-label">Şehir *</label>
+                    <select
+                      id="addressCity"
+                      class="form-control"
+                      [(ngModel)]="addressFormData.city"
+                      name="city"
+                      required>
+                      <option value="">Şehir seçin</option>
+                      <option *ngFor="let city of cities" [value]="city">
+                        {{city}}
+                      </option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="district" class="form-label">İlçe *</label>
+                    <input
+                      type="text"
+                      id="district"
+                      class="form-control"
+                      [(ngModel)]="addressFormData.district"
+                      name="district"
+                      required>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="address" class="form-label">Adres *</label>
+                  <textarea
+                    id="address"
+                    class="form-control"
+                    rows="3"
+                    [(ngModel)]="addressFormData.address"
+                    name="address"
+                    placeholder="Cadde, sokak, apartman, daire no..."
+                    required></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label for="addressPhone" class="form-label">Telefon *</label>
+                  <input
+                    type="tel"
+                    id="addressPhone"
+                    class="form-control"
+                    [(ngModel)]="addressFormData.phone"
+                    name="phone"
+                    placeholder="05XX XXX XX XX"
+                    required>
+                </div>
+                
+                <div class="form-group">
+                  <label class="checkbox">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="addressFormData.isDefault"
+                      name="isDefault">
+                    <span>Bu adresi varsayılan adresim yap</span>
+                  </label>
+                </div>
+                
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-outline"
+                    (click)="closeAddressForm()">
+                    İptal
+                  </button>
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    [disabled]="isSavingAddress || !addressForm.form.valid">
+                    <span *ngIf="!isSavingAddress">Adresi Kaydet</span>
+                    <span *ngIf="isSavingAddress">Kaydediliyor...</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Tab -->
+        <div *ngIf="activeTab === 'security'" class="tab-pane">
+          <div class="security-sections">
+            <!-- Change Password -->
+            <div class="security-card">
+              <h3>🔒 Şifre Değiştir</h3>
+              <form (ngSubmit)="changePassword()" #passwordForm="ngForm">
+                <div class="form-group">
+                  <label for="currentPassword" class="form-label">Mevcut Şifre *</label>
+                  <input
+                    [type]="showCurrentPassword ? 'text' : 'password'"
+                    id="currentPassword"
+                    class="form-control"
+                    [(ngModel)]="passwordData.currentPassword"
+                    name="currentPassword"
+                    required>
+                  <button type="button" class="password-toggle" (click)="togglePassword('current')">
+                    {{showCurrentPassword ? '🙈' : '👁️'}}
+                  </button>
+                </div>
+                
+                <div class="form-group">
+                  <label for="newPassword" class="form-label">Yeni Şifre *</label>
+                  <input
+                    [type]="showNewPassword ? 'text' : 'password'"
+                    id="newPassword"
+                    class="form-control"
+                    [(ngModel)]="passwordData.newPassword"
+                    name="newPassword"
+                    required
+                    minlength="6">
+                  <div class="password-hint">En az 6 karakter</div>
+                  <button type="button" class="password-toggle" (click)="togglePassword('new')">
+                    {{showNewPassword ? '🙈' : '👁️'}}
+                  </button>
+                </div>
+                
+                <div class="form-group">
+                  <label for="confirmPassword" class="form-label">Yeni Şifre Tekrar *</label>
+                  <input
+                    [type]="showConfirmPassword ? 'text' : 'password'"
+                    id="confirmPassword"
+                    class="form-control"
+                    [(ngModel)]="passwordData.confirmPassword"
+                    name="confirmPassword"
+                    required>
+                  <button type="button" class="password-toggle" (click)="togglePassword('confirm')">
+                    {{showConfirmPassword ? '🙈' : '👁️'}}
+                  </button>
+                </div>
+                
+                <div class="form-actions">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    [disabled]="isChangingPassword || passwordData.newPassword !== passwordData.confirmPassword">
+                    <span *ngIf="!isChangingPassword">Şifreyi Değiştir</span>
+                    <span *ngIf="isChangingPassword">Değiştiriliyor...</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Two-Factor Authentication -->
+            <div class="security-card">
+              <h3>🔐 İki Faktörlü Doğrulama</h3>
+              <div class="security-toggle">
+                <div class="toggle-info">
+                  <h4>SMS Doğrulama</h4>
+                  <p>Girişlerde SMS ile doğrulama kodu alın</p>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="twoFactor" [(ngModel)]="securitySettings.twoFactorEnabled">
+                  <label for="twoFactor" class="toggle-slider"></label>
+                </div>
+              </div>
+              
+              <div class="security-toggle">
+                <div class="toggle-info">
+                  <h4>E-posta Bildirimleri</h4>
+                  <p>Şüpheli giriş denemelerinden haberdar olun</p>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="emailAlerts" [(ngModel)]="securitySettings.emailAlerts" checked>
+                  <label for="emailAlerts" class="toggle-slider"></label>
+                </div>
+              </div>
+              
+              <button class="btn btn-outline" (click)="saveSecuritySettings()">
+                Güvenlik Ayarlarını Kaydet
+              </button>
+            </div>
+
+            <!-- Active Sessions -->
+            <div class="security-card">
+              <h3>🌐 Aktif Oturumlar</h3>
+              <div class="sessions-list">
+                <div *ngFor="let session of activeSessions" class="session-item">
+                  <div class="session-info">
+                    <div class="session-device">
+                      <span class="device-icon">{{session.deviceIcon}}</span>
+                      <div>
+                        <strong>{{session.device}}</strong>
+                        <small>{{session.browser}}</small>
+                      </div>
+                    </div>
+                    <div class="session-details">
+                      <span class="session-location">{{session.location}}</span>
+                      <span class="session-time">{{session.lastActive}}</span>
+                    </div>
+                  </div>
+                  <button
+                    class="btn btn-sm btn-outline"
+                    (click)="endSession(session)"
+                    [disabled]="session.isCurrent">
+                    {{session.isCurrent ? 'Bu Cihaz' : 'Sonlandır'}}
+                  </button>
+                </div>
+              </div>
+              
+              <button class="btn btn-danger" (click)="endAllSessions()">
+                🚫 Tüm Oturumları Sonlandır
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preferences Tab -->
+        <div *ngIf="activeTab === 'preferences'" class="tab-pane">
+          <div class="preferences-grid">
+            <!-- Notification Preferences -->
+            <div class="preferences-card">
+              <h3>🔔 Bildirim Tercihleri</h3>
+              <div class="preferences-list">
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <h4>Yeni Mesajlar</h4>
+                    <p>Bağışçı/alıcılardan gelen mesajlar</p>
+                  </div>
+                  <div class="toggle-switch small">
+                    <input type="checkbox" id="notif1" [(ngModel)]="preferences.newMessages" checked>
+                    <label for="notif1" class="toggle-slider"></label>
+                  </div>
+                </div>
+                
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <h4>Bağış Durumu</h4>
+                    <p>Bağışlarınızın onay/red/kargo durumu</p>
+                  </div>
+                  <div class="toggle-switch small">
+                    <input type="checkbox" id="notif2" [(ngModel)]="preferences.donationStatus" checked>
+                    <label for="notif2" class="toggle-slider"></label>
+                  </div>
+                </div>
+                
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <h4>Platform Duyuruları</h4>
+                    <p>Önemli güncellemeler ve duyurular</p>
+                  </div>
+                  <div class="toggle-switch small">
+                    <input type="checkbox" id="notif3" [(ngModel)]="preferences.platformAnnouncements">
+                    <label for="notif3" class="toggle-slider"></label>
+                  </div>
+                </div>
+                
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <h4>Haftalık Rapor</h4>
+                    <p>Haftalık aktivite özeti e-postası</p>
+                  </div>
+                  <div class="toggle-switch small">
+                    <input type="checkbox" id="notif4" [(ngModel)]="preferences.weeklyReport">
+                    <label for="notif4" class="toggle-slider"></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="preferences-card">
+              <h3>🛡️ Gizlilik Ayarları</h3>
+              <div class="preferences-list">
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <h4>Profil Görünürlüğü</h4>
+                    <p>Profilinizi diğer kullanıcılara göster</p>
+                  </div>
+                  <div class="toggle-switch small">
+                    <input type="checkbox" id="privacy1" [(ngModel)]="privacySettings.profileVisible" checked>
+                    <label for="privacy1" class="toggle-slider"></label>
+                  </div>
+                </div>
+                
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <h4>Bağış Geçmişi</h4>
+                    <p>Bağış geçmişinizi herkese açık göster</p>
+                  </div>
+                  <div class="toggle-switch small">
+                    <input type="checkbox" id="privacy2" [(ngModel)]="privacySettings.donationHistoryPublic">
+                    <label for="privacy2" class="toggle-slider"></label>
+                  </div>
+                </div>
+                
+                <div class="preference-item">
+                  <div class="preference-info">
+                    <h4>Arama Motorları</h4>
+                    <p>Profilinizi arama motorlarında listele</p>
+                  </div>
+                  <div class="toggle-switch small">
+                    <input type="checkbox" id="privacy3" [(ngModel)]="privacySettings.searchEngineIndex">
+                    <label for="privacy3" class="toggle-slider"></label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="dataRetention" class="form-label">Veri Saklama Tercihi</label>
+                <select
+                  id="dataRetention"
+                  class="form-control"
+                  [(ngModel)]="privacySettings.dataRetention">
+                  <option value="30">30 gün sonra sil</option>
+                  <option value="90">3 ay sonra sil</option>
+                  <option value="365">1 yıl sonra sil</option>
+                  <option value="forever">Sakla</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Communication Preferences -->
+            <div class="preferences-card">
+              <h3>💬 İletişim Tercihleri</h3>
+              <div class="preference-options">
+                <div class="radio-group">
+                  <label class="radio-option">
+                    <input
+                      type="radio"
+                      name="communication"
+                      value="platform"
+                      [(ngModel)]="communicationSettings.preferredMethod"
+                      checked>
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">Sadece Platform Üzerinden</span>
+                  </label>
+                  
+                  <label class="radio-option">
+                    <input
+                      type="radio"
+                      name="communication"
+                      value="phone"
+                      [(ngModel)]="communicationSettings.preferredMethod">
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">Telefon ile</span>
+                  </label>
+                  
+                  <label class="radio-option">
+                    <input
+                      type="radio"
+                      name="communication"
+                      value="email"
+                      [(ngModel)]="communicationSettings.preferredMethod">
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">E-posta ile</span>
+                  </label>
+                </div>
+                
+                <div class="form-group">
+                  <label class="checkbox">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="communicationSettings.allowMarketing">
+                    <span>Platform güncellemeleri ve kampanyalar hakkında bilgilendirilmek istiyorum</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Account Management -->
+            <div class="preferences-card danger-zone">
+              <h3>⚠️ Hesap Yönetimi</h3>
+              <div class="danger-actions">
+                <button class="btn btn-outline" (click)="exportData()">
+                  📥 Verilerimi İndir
+                </button>
+                <button class="btn btn-warning" (click)="deactivateAccount()">
+                  ⏸️ Hesabı Askıya Al
+                </button>
+                <button class="btn btn-danger" (click)="deleteAccount()">
+                  🗑️ Hesabı Sil
+                </button>
+              </div>
+              <p class="danger-note">
+                <strong>Not:</strong> Hesap silme işlemi geri alınamaz. 
+                Tüm bağış geçmişiniz ve verileriniz kalıcı olarak silinecektir.
+              </p>
+            </div>
+          </div>
+          
+          <div class="preferences-actions">
+            <button class="btn btn-outline" (click)="resetPreferences()">
+              Varsayılana Dön
+            </button>
+            <button class="btn btn-primary" (click)="saveAllPreferences()">
+              Tüm Tercihleri Kaydet
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
